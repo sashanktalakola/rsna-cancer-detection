@@ -51,7 +51,7 @@ valid_df.reset_index(drop=True, inplace=True)
 
 BATCH_SIZE = args.batch_size
 
-train_dataloader = getDataloader(train_df, IMG_DIR, BATCH_SIZE, "TRAIN", "VALID", IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH)
+train_dataloader = getDataloader(train_df, IMG_DIR, BATCH_SIZE, "TRAIN", "TRAIN", IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH)
 valid_dataloader = getDataloader(valid_df, IMG_DIR, BATCH_SIZE, "TRAIN", "VALID", IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH)
 
 BACKBONE = args.backbone
@@ -71,7 +71,7 @@ LR_PATIENCE = 1
 LR_FACTOR = 0.3333
 class_weights = getClassWeights(train_df)
 weight = torch.Tensor([float(class_weights[1]), ]).to(device)
-loss_fn = nn.BCEWithLogitsLoss(pos_weight=weight)
+loss_fn = nn.BCEWithLogitsLoss()
 optimizer = optim.Adam(model.parameters(), lr=LR)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=LR_PATIENCE,
                                                  verbose=True, factor=LR_FACTOR)
