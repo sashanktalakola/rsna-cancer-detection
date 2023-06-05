@@ -13,6 +13,7 @@ from utils import *
 parser = argparse.ArgumentParser()
 parser.add_argument("-e", "--env", choices=['kaggle', 'local'])
 parser.add_argument("-d", "--debug", action="store_true")
+parser.add_argument("-l", "--laterality")
 args = parser.parse_args()
 
 DF_PATH = None

@@ -101,4 +101,3 @@ def saveModel(model, optimizer,  path):
     state_dict = {"model": model.state_dict(),
                   "optimizer": optimizer.state_dict()}
     torch.save(state_dict, path)
-    
