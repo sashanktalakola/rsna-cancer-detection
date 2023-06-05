@@ -8,7 +8,7 @@ def createCSV(csv_file_path):
     csv_writer = None
     cols = ["epoch", "training_loss", "training_acc", "training_f1", "validation_loss",
             "validation_acc", "validation_f1"]
-    with open("log.csv", "w") as f:
+    with open(csv_file_path, "w") as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(cols)
 
@@ -28,7 +28,7 @@ def train(model, dataloader, loss_fn, optimizer, epoch, num_epochs, N_ACCUMULATI
     loop = tqdm(enumerate(dataloader), total=len(dataloader))
 
     for batch_idx, (X, y) in loop:
-        loop.set_description("Epoch [{}/{}]".format(epoch, num_epochs))
+        loop.set_description("Epoch [{}/{}]".format(epoch+1, num_epochs))
 
         # model = model.to(device)
         X = X.to(device)
@@ -72,7 +72,7 @@ def valid(model, dataloader, loss_fn, scheduler, epoch, num_epochs, device):
     with torch.inference_mode():
         loop = tqdm(enumerate(dataloader), total=len(dataloader))
         for batch_idx, (X, y) in loop:
-            loop.set_description("Epoch [{}/{}]".format(epoch, num_epochs))
+            loop.set_description("Epoch [{}/{}]".format(epoch+1, num_epochs))
 
             # model = model.to(device)
             X = X.to(device)
@@ -96,3 +96,9 @@ def valid(model, dataloader, loss_fn, scheduler, epoch, num_epochs, device):
         scheduler.step(mean_loss)
 
     return [mean_loss, mean_accuracy, mean_f1_score]
+
+def saveModel(model, optimizer,  path):
+    state_dict = {"model": model.state_dict(),
+                  "optimizer": optimizer.state_dict()}
+    torch.save(state_dict, path)
+    
