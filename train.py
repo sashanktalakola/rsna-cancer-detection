@@ -12,6 +12,7 @@ from utils import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-e", "--env", choices=['kaggle', 'local'])
+parser.add_argument("-d", "--debug", action="store_true")
 args = parser.parse_args()
 
 DF_PATH = None
@@ -27,7 +28,8 @@ else:
 df = pd.read_csv(DF_PATH)
 df.drop(["BIRADS", "density"], axis=1, inplace=True)
 
-#df = df.sample(frac=0.01).reset_index(drop=True)
+if args.debug:
+    df = df.sample(frac=0.05).reset_index(drop=True)
 
 imputer = SimpleImputer(strategy='median')
 df.age = imputer.fit_transform(df.age.values.reshape(-1, 1))
@@ -59,7 +61,7 @@ createCSV(CSV_LOG_FILE)
 
 LR = 3e-5
 LR_PATIENCE = 1
-LR_FACTOR = 0.4
+LR_FACTOR = 0.3333
 class_weights = getClassWeights(train_df)
 weight = torch.Tensor([float(class_weights[1]), ]).to(device)
 loss_fn = nn.BCEWithLogitsLoss(pos_weight=weight)
@@ -76,3 +78,5 @@ for epoch in range(NUM_EPOCHS):
 
     vals = [epoch, ] + train_vals + valid_vals
     writeCSVLog(vals, CSV_LOG_FILE)
+    model_path = "{}_{}_{}_{}.pth".format(LATERALITY, VIEW, BACKBONE, epoch+1)
+    saveModel(model, optimizer, model_path)
