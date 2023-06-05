@@ -19,6 +19,7 @@ parser.add_argument("-b", "--batch-size", type=int, default=32)
 parser.add_argument("-bb", "--backbone", default="seresnext50_32x4d")
 parser.add_argument("-p", "--pretrained", action="store_true")
 parser.add_argument("-n", "--epochs", type=int, default=10)
+parser.add_argument("-lr", "--learning-rate", type=float, default=1e-4)
 args = parser.parse_args()
 
 DF_PATH = None
@@ -67,7 +68,7 @@ scaler = torch.cuda.amp.GradScaler()
 CSV_LOG_FILE = "{}_{}_{}.csv".format(BACKBONE, LATERALITY, VIEW)
 createCSV(CSV_LOG_FILE)
 
-LR = 3e-5
+LR = args.learning_rate
 LR_PATIENCE = 1
 LR_FACTOR = 0.3333
 class_weights = getClassWeights(train_df)
