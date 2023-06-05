@@ -17,6 +17,7 @@ parser.add_argument("-ih", "--height", type=int, default=768)
 parser.add_argument("-w", "--width", type=int, default=384)
 parser.add_argument("-b", "--batch-size", type=int, default=32)
 parser.add_argument("-bb", "--backbone", default="seresnext50_32x4d")
+parser.add_argument("-p", "--pretrained", action="store_true")
 args = parser.parse_args()
 
 DF_PATH = None
@@ -56,7 +57,7 @@ valid_dataloader = getDataloader(valid_df, IMG_DIR, BATCH_SIZE, "TRAIN", "VALID"
 BACKBONE = args.backbone
 FEATURE_VEC_SIZE = getFeatureVectorSize(BACKBONE)
 
-model = Model(BACKBONE, FEATURE_VEC_SIZE)
+model = Model(BACKBONE, FEATURE_VEC_SIZE, pretrained=args.pretrained)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
