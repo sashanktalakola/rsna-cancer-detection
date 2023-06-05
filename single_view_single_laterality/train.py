@@ -45,7 +45,7 @@ valid_df.reset_index(drop=True, inplace=True)
 
 BATCH_SIZE = 16
 
-train_dataloader = getDataloader(train_df, IMG_DIR, BATCH_SIZE, mode="TRAIN", transforms_mode="TRAIN")
+train_dataloader = getDataloader(train_df, IMG_DIR, BATCH_SIZE, mode="TRAIN", transforms_mode="VALID")
 valid_dataloader = getDataloader(valid_df, IMG_DIR, BATCH_SIZE, mode="TRAIN", transforms_mode="VALID")
 
 BACKBONE = "seresnext50_32x4d"
