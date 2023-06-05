@@ -2,8 +2,7 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 from albumentations import Resize
 
-IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH = 768, 384
-def getTransforms(mode="TRAIN"):
+def getTransforms(mode="TRAIN", IMG_SIZE_HEIGHT=768, IMG_SIZE_WIDTH=384):
     if mode == "TRAIN":
         transforms = A.Compose([
                 Resize(IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH),

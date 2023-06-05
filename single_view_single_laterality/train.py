@@ -1,9 +1,7 @@
-import os
 import argparse
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
-import torch
 import torch.nn as nn
 from model import Model
 from dataset import getDataloader, getClassWeights
@@ -13,11 +11,17 @@ from utils import *
 parser = argparse.ArgumentParser()
 parser.add_argument("-e", "--env", choices=['kaggle', 'local'])
 parser.add_argument("-d", "--debug", action="store_true")
-parser.add_argument("-l", "--laterality")
+parser.add_argument("-l", "--laterality", type=str, default="L")
+parser.add_argument("-v", "--view", type=str, default="MLO")
+parser.add_argument("-h", "--height", type=int, default=768)
+parser.add_argument("-w", "--width", type=int, default=384)
+parser.add_argument("-b", "--batch-size", type=int, default=32)
 args = parser.parse_args()
 
 DF_PATH = None
 IMG_DIR = None
+
+IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH = args.height, args.width
 
 if args.env == "local":
     DF_PATH = "./train.csv"
@@ -35,18 +39,18 @@ if args.debug:
 imputer = SimpleImputer(strategy='median')
 df.age = imputer.fit_transform(df.age.values.reshape(-1, 1))
 
-LATERALITY = "L"
-VIEW = "MLO"
+LATERALITY = args.laterality
+VIEW = args.view
 df = df[(df.view == VIEW) & (df.laterality == LATERALITY)]
 
 train_df, valid_df = train_test_split(df, test_size=.2, random_state=42)
 train_df.reset_index(drop=True, inplace=True)
 valid_df.reset_index(drop=True, inplace=True)
 
-BATCH_SIZE = 16
+BATCH_SIZE = args.batch_size
 
-train_dataloader = getDataloader(train_df, IMG_DIR, BATCH_SIZE, mode="TRAIN", transforms_mode="VALID")
-valid_dataloader = getDataloader(valid_df, IMG_DIR, BATCH_SIZE, mode="TRAIN", transforms_mode="VALID")
+train_dataloader = getDataloader(train_df, IMG_DIR, BATCH_SIZE, "TRAIN", "VALID", IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH)
+valid_dataloader = getDataloader(valid_df, IMG_DIR, BATCH_SIZE, "TRAIN", "VALID", IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH)
 
 BACKBONE = "seresnext50_32x4d"
 FEATURE_VEC_SIZE = 2048

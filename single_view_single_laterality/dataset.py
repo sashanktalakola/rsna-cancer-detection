@@ -8,12 +8,12 @@ from sklearn.utils import compute_class_weight
 from preprocessing import *
 
 class RSNADataset(Dataset):
-    def __init__(self, df, img_dir, mode="TRAIN", transforms_mode="TRAIN"):
+    def __init__(self, df, img_dir, mode="TRAIN", transforms_mode="TRAIN", IMG_SIZE_HEIGHT=768, IMG_SIZE_WIDTH=384):
         self.df = df
         self.img_dir = img_dir
         self.mode = mode
         self.transforms_mode = transforms_mode
-        self.transforms = getTransforms(transforms_mode)
+        self.transforms = getTransforms(transforms_mode, IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH)
 
     def __len__(self):
         return len(self.df)
@@ -43,8 +43,8 @@ def getClassWeights(df):
     class_weights = dict(zip(np.unique(df.cancer), class_weights))
     return class_weights
 
-def getDataloader(df, img_dir, batch_size, mode="TRAIN", transforms_mode="TRAIN"):
-    dataset = RSNADataset(df, img_dir, mode=mode, transforms_mode=transforms_mode)
+def getDataloader(df, img_dir, batch_size, mode="TRAIN", transforms_mode="TRAIN", IMG_SIZE_HEIGHT=768, IMG_SIZE_WIDTH=384):
+    dataset = RSNADataset(df, img_dir, mode, transforms_mode, IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH)
     if transforms_mode == "TRAIN":
         class_weights = getClassWeights(df)
         sample_weights = [0] * len(dataset)
