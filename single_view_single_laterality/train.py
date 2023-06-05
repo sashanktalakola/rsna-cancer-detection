@@ -18,6 +18,7 @@ parser.add_argument("-w", "--width", type=int, default=384)
 parser.add_argument("-b", "--batch-size", type=int, default=32)
 parser.add_argument("-bb", "--backbone", default="seresnext50_32x4d")
 parser.add_argument("-p", "--pretrained", action="store_true")
+parser.add_argument("-n", "--epochs", type=int, default=10)
 args = parser.parse_args()
 
 DF_PATH = None
@@ -78,7 +79,7 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=LR_PATIENCE
 scaler = torch.cuda.amp.GradScaler()
 
 print("\nTraining Begin\n")
-NUM_EPOCHS = 10
+NUM_EPOCHS = args.epochs
 for epoch in range(NUM_EPOCHS):
     train_vals = train(model, train_dataloader, loss_fn, optimizer, epoch, NUM_EPOCHS, N_ACCUMULATION_STEPS, device, scaler)
     valid_vals = valid(model, valid_dataloader, loss_fn, scheduler, epoch, NUM_EPOCHS, device)
