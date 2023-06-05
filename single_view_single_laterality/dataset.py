@@ -29,12 +29,11 @@ class RSNADataset(Dataset):
         img = Image.open(image_path).convert('RGB')
         img = np.array(img)
         img = self.transforms(image=img)["image"]
-        img = np.concatenate([img, img, img], axis=0).astype(np.float32)
 
         if self.mode == "TRAIN":
-            return torch.tensor(img), torch.tensor(y_label)
+            return torch.tensor(img, dtype=torch.float), torch.tensor(y_label, dtype=torch.float)
         else:
-            return torch.tensor(img)
+            return torch.tensor(img, dtype=torch.float)
 
 def getClassWeights(df):
     class_weights = compute_class_weight(class_weight="balanced", classes=np.unique(df.cancer),

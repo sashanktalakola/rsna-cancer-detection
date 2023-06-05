@@ -28,7 +28,7 @@ IMG_DIR = None
 IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH = args.height, args.width
 
 if args.env == "local":
-    DF_PATH = "./train.csv"
+    DF_PATH = "./single_view_single_laterality/train.csv"
     IMG_DIR = "./data-cut-off"
 else:
     DF_PATH = "/kaggle/input/rsna-breast-cancer-detection/train.csv"
