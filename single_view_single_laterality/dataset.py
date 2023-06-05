@@ -26,8 +26,7 @@ class RSNADataset(Dataset):
 
         image_name = "{}/{}.png".format(row.patient_id, row.image_id)
         image_path = os.path.join(self.img_dir, image_name)
-        img = Image.open(image_path)
-        img.load()
+        img = Image.open(image_path).convert('RGB')
         img = np.array(img)
         img = self.transforms(image=img)["image"]
         img = np.concatenate([img, img, img], axis=0).astype(np.float32)
