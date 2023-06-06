@@ -101,17 +101,3 @@ def saveModel(model, optimizer,  path):
     state_dict = {"model": model.state_dict(),
                   "optimizer": optimizer.state_dict()}
     torch.save(state_dict, path)
-
-def loadModel(checkpoint_path, optimizer, model):
-    checkpoint = torch.load(checkpoint_path)
-    model.load_state_dict(checkpoint["model"])
-    optimizer.load_state_dict(checkpoint["optimizer"])
-
-def getFeatureVectorSize(model_name):
-    size_dict = {
-        "convnextv2_base": 1024,
-        "convnextv2_small": 768,
-        "seresnext50_32x4d": 2048
-    }
-
-    return size_dict[model_name]

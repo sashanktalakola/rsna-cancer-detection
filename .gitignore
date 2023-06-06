@@ -1,4 +1,3 @@
 data-cut-off/
 .idea/
-temp.py
-pytorch.ipynb
+*.ipynb

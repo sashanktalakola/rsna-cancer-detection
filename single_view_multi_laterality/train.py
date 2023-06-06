@@ -1,7 +1,9 @@
+import os
 import argparse
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
+import torch
 import torch.nn as nn
 from model import Model
 from dataset import getDataloader, getClassWeights
@@ -11,25 +13,14 @@ from utils import *
 parser = argparse.ArgumentParser()
 parser.add_argument("-e", "--env", choices=['kaggle', 'local'])
 parser.add_argument("-d", "--debug", action="store_true")
-parser.add_argument("-l", "--laterality", type=str, default="L")
-parser.add_argument("-v", "--view", type=str, default="MLO")
-parser.add_argument("-ih", "--height", type=int, default=768)
-parser.add_argument("-w", "--width", type=int, default=384)
-parser.add_argument("-b", "--batch-size", type=int, default=32)
-parser.add_argument("-bb", "--backbone", default="seresnext50_32x4d")
-parser.add_argument("-p", "--pretrained", action="store_true")
-parser.add_argument("-n", "--epochs", type=int, default=10)
-parser.add_argument("-lr", "--learning-rate", type=float, default=1e-4)
-parser.add_argument("-c", "--checkpoint", type=str, default='')
+parser.add_argument("-l", "--laterality")
 args = parser.parse_args()
 
 DF_PATH = None
 IMG_DIR = None
 
-IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH = args.height, args.width
-
 if args.env == "local":
-    DF_PATH = "./single_view_single_laterality/train.csv"
+    DF_PATH = "./train.csv"
     IMG_DIR = "./data-cut-off"
 else:
     DF_PATH = "/kaggle/input/rsna-breast-cancer-detection/train.csv"
@@ -44,23 +35,23 @@ if args.debug:
 imputer = SimpleImputer(strategy='median')
 df.age = imputer.fit_transform(df.age.values.reshape(-1, 1))
 
-LATERALITY = args.laterality
-VIEW = args.view
+LATERALITY = "L"
+VIEW = "MLO"
 df = df[(df.view == VIEW) & (df.laterality == LATERALITY)]
 
 train_df, valid_df = train_test_split(df, test_size=.2, random_state=42)
 train_df.reset_index(drop=True, inplace=True)
 valid_df.reset_index(drop=True, inplace=True)
 
-BATCH_SIZE = args.batch_size
+BATCH_SIZE = 16
 
-train_dataloader = getDataloader(train_df, IMG_DIR, BATCH_SIZE, "TRAIN", "TRAIN", IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH)
-valid_dataloader = getDataloader(valid_df, IMG_DIR, BATCH_SIZE, "TRAIN", "VALID", IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH)
+train_dataloader = getDataloader(train_df, IMG_DIR, BATCH_SIZE, mode="TRAIN", transforms_mode="TRAIN")
+valid_dataloader = getDataloader(valid_df, IMG_DIR, BATCH_SIZE, mode="TRAIN", transforms_mode="VALID")
 
-BACKBONE = args.backbone
-FEATURE_VEC_SIZE = getFeatureVectorSize(BACKBONE)
+BACKBONE = "seresnext50_32x4d"
+FEATURE_VEC_SIZE = 2048
 
-model = Model(BACKBONE, FEATURE_VEC_SIZE, pretrained=args.pretrained)
+model = Model(BACKBONE, FEATURE_VEC_SIZE)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
@@ -69,22 +60,19 @@ scaler = torch.cuda.amp.GradScaler()
 CSV_LOG_FILE = "{}_{}_{}.csv".format(BACKBONE, LATERALITY, VIEW)
 createCSV(CSV_LOG_FILE)
 
-LR = args.learning_rate
+LR = 3e-5
 LR_PATIENCE = 1
 LR_FACTOR = 0.3333
 class_weights = getClassWeights(train_df)
 weight = torch.Tensor([float(class_weights[1]), ]).to(device)
-loss_fn = nn.BCEWithLogitsLoss()
+loss_fn = nn.BCEWithLogitsLoss(pos_weight=weight)
 optimizer = optim.Adam(model.parameters(), lr=LR)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=LR_PATIENCE,
                                                  verbose=True, factor=LR_FACTOR)
 scaler = torch.cuda.amp.GradScaler()
 
-if args.checkpoint:
-    loadModel(args.checkpoint, optimizer, model)
-
 print("\nTraining Begin\n")
-NUM_EPOCHS = args.epochs
+NUM_EPOCHS = 10
 for epoch in range(NUM_EPOCHS):
     train_vals = train(model, train_dataloader, loss_fn, optimizer, epoch, NUM_EPOCHS, N_ACCUMULATION_STEPS, device, scaler)
     valid_vals = valid(model, valid_dataloader, loss_fn, scheduler, epoch, NUM_EPOCHS, device)
