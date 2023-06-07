@@ -32,7 +32,7 @@ class RSNADatasetAux(Dataset):
         img = self.transforms(image=img)["image"]
 
         if self.mode == "TRAIN":
-            return torch.tensor(img, dtype=torch.float), torch.tensor(y_label, dtype=torch.float), torch.as_tensor(y_auxiliary)
+            return torch.tensor(img, dtype=torch.float), torch.tensor(y_label, dtype=torch.float), torch.tensor(y_auxiliary, dtype=torch.float)
         else:
             return torch.tensor(img, dtype=torch.float)
 
@@ -44,7 +44,7 @@ def getClassWeights(df):
 
 def getDataloader(df, img_dir, batch_size, aux_features, mode="TRAIN", transforms_mode="TRAIN", IMG_SIZE_HEIGHT=768, IMG_SIZE_WIDTH=384):
     dataset = RSNADatasetAux(df, img_dir, aux_features, mode, transforms_mode, IMG_SIZE_HEIGHT, IMG_SIZE_WIDTH)
-    if transforms_mode == "TRAIN":
+    if mode == "TRAIN":
         class_weights = getClassWeights(df)
         sample_weights = [0] * len(dataset)
         loop = tqdm(enumerate(dataset), total=len(dataset))
@@ -57,3 +57,11 @@ def getDataloader(df, img_dir, batch_size, aux_features, mode="TRAIN", transform
         return DataLoader(dataset, batch_size=batch_size, sampler=sampler, pin_memory=True)
     else:
         return DataLoader(dataset, batch_size=batch_size)
+
+import pandas as pd
+df = pd.read_csv("/home/sashank/Desktop/RSNA Paper/single_view_single_laterality/train.csv")
+df = df.sample(frac=0.005).reset_index(drop=True)
+dl = getDataloader(df, "data-cut-off", 2, ["BIRADS"], "TRAIN", "TRAIN")
+
+a = next(iter(dl))
+print(a[0].type(), a[1].type(), a[2].type())
