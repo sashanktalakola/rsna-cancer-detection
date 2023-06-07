@@ -57,11 +57,3 @@ def getDataloader(df, img_dir, batch_size, aux_features, mode="TRAIN", transform
         return DataLoader(dataset, batch_size=batch_size, sampler=sampler, pin_memory=True)
     else:
         return DataLoader(dataset, batch_size=batch_size)
-
-import pandas as pd
-df = pd.read_csv("/home/sashank/Desktop/RSNA Paper/single_view_single_laterality/train.csv")
-df = df.sample(frac=0.005).reset_index(drop=True)
-dl = getDataloader(df, "data-cut-off", 2, ["BIRADS"], "TRAIN", "TRAIN")
-
-a = next(iter(dl))
-print(a[0].type(), a[1].type(), a[2].type())
