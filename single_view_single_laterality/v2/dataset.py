@@ -30,11 +30,13 @@ class RSNADatasetAux(Dataset):
         img = Image.open(image_path).convert('RGB')
         img = np.array(img)
         img = self.transforms(image=img)["image"]
+        img = torch.tensor(img, dtype=torch.float)
+        img = torch.permute(img, (-1, 0, 1))
 
         if self.mode == "TRAIN":
-            return torch.tensor(img, dtype=torch.float), torch.tensor(y_label, dtype=torch.float), torch.tensor(y_auxiliary, dtype=torch.float)
+            return img, torch.tensor(y_label, dtype=torch.float), torch.tensor(y_auxiliary, dtype=torch.float)
         else:
-            return torch.tensor(img, dtype=torch.float)
+            return img
 
 def getClassWeights(df):
     class_weights = compute_class_weight(class_weight="balanced", classes=np.unique(df.cancer),
